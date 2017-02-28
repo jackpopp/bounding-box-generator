@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bounding Box Generator</title>
+</head>
+<body>
+    <div>
+        <h3>Bounding Box Generator</h3>
+        <label>Miles <br><input id="miles" placeholder="miles" value="0"><br></label>
+        <label>Latitude <br><input id="latitude" placeholder="latitude" value="0"><br></label>
+        <label>Longitude <br><input id="longitude" placeholder="longitude" value="0"><br></label>
+    </div>
+
+    <div id="bb" class="bounding-box-output"></div>
+    <style>
+        body {
+            font-family: Tahoma, Geneva, sans-serif;
+            color: #333;
+        }
+        
+        input {
+            padding: 5px;
+            margin: 5px 5px 5px 0;
+            
+        }
+        
+        .bounding-box-output {
+            margin-top: 30px;
+        }
+
+        .title {
+            width: 120px;
+            display: inline-block;
+        }
+        
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            padding: 5px 0;
+        }
+    </style>
+    <script>
+        let KM = 0;
+        let lat = 0;
+        let lng = 0;
+        let boundingbox = { minLat: 0, maxLat: 0, minLng: 0, maxLng: 0 };
+
+        const miles2Km = miles => (miles * 1.609344);
+        const toBB = (latitude, longitude, distanceKm = 30) => {
+            latitude = parseFloat(latitude);
+            longitude = parseFloat(longitude);
+            const earthRadius = 6371.0;
+
+            const latRadian = (latitude * Math.PI) / 180;
+
+            const lngOffset = ((distanceKm / earthRadius / Math.cos(latRadian)) * 180) / Math.PI;
+            const latOffset = ((distanceKm / earthRadius) * 180) / Math.PI;
+
+            const minLat = (latitude - latOffset).toFixed(4);
+            const maxLat = (latitude + latOffset).toFixed(4);
+            const minLng = (longitude - lngOffset).toFixed(4);
+            const maxLng = (longitude + lngOffset).toFixed(4);
+
+            return { minLat, maxLat, minLng, maxLng };
+        }
+
+        print = () => {
+            document.querySelector('#bb').innerHTML = `
+                <ul>
+                    <li><span class="title">min latitude </span><input value="${boundingbox.minLat}"></input></li>
+                    <li><span class="title">max latitude </span><input value="${boundingbox.maxLat}"></input></li>
+                    <li><span class="title">min longitude </span><input value="${boundingbox.minLng}"></input></li>
+                    <li><span class="title">max longitude </span><input value="${boundingbox.maxLng}"></input></li>
+                </ul>
+            `;
+        }
+
+        document.querySelector('#miles').onkeyup = (e) => {
+            KM = miles2Km(e.target.value);
+            print();
+        }
+
+        document.querySelector('#latitude').onkeyup = (e) => {
+            lat = parseFloat(e.target.value).toFixed(4);
+            boundingbox = toBB(lat, lng, KM);
+            print();
+        }
+
+        document.querySelector('#longitude').onkeyup = (e) => {
+            lng = parseFloat(e.target.value).toFixed(4);
+            boundingbox = toBB(lat, lng, KM);
+            print();
+        }
+
+        print();
+    </script>
+</body>
+</html>
